@@ -3,7 +3,6 @@ package ru.skypro.course2.valiev.StringList.Impl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.skypro.course2.valiev.StringList.StringList;
-import ru.skypro.course2.valiev.exception.StringListElementNotFound;
 import ru.skypro.course2.valiev.exception.StringListIndexOutOfRangeException;
 import ru.skypro.course2.valiev.exception.StringListNullException;
 import ru.skypro.course2.valiev.exception.StringListNullItemException;
@@ -84,11 +83,6 @@ class StringListImplTest {
     @Test
     void shouldRemoveStringItemStringListNullItemException() {
         assertThrows(StringListNullItemException.class, () -> stringList.remove(null));
-    }
-
-    @Test
-    void shouldRemoveStringItemStringListElementNotFoundException() {
-        assertThrows(StringListElementNotFound.class, () -> stringList.remove(ITEM_NOT_FOUND));
     }
 
     @Test

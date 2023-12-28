@@ -1,7 +1,6 @@
 package ru.skypro.course2.valiev.StringList.Impl;
 
 import ru.skypro.course2.valiev.StringList.StringList;
-import ru.skypro.course2.valiev.exception.StringListElementNotFound;
 import ru.skypro.course2.valiev.exception.StringListIndexOutOfRangeException;
 import ru.skypro.course2.valiev.exception.StringListNullException;
 import ru.skypro.course2.valiev.exception.StringListNullItemException;
@@ -10,100 +9,70 @@ import java.util.Arrays;
 
 public class StringListImpl implements StringList {
     private String[] stringArray;
-    private int arraySize;
     private int listSize;
 
     public StringListImpl() {
-        this.arraySize = 10;
         this.listSize = 0;
-        this.stringArray = new String[arraySize];
+        this.stringArray = new String[10];
     }
 
     @Override
     public String add(String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
-        if(listSize + 1 < arraySize) {
-            stringArray[listSize] = item;
-            listSize++;
-        } else {
+        validateItem(item);
+        if(listSize >= stringArray.length) {
             increaseArray();
-            this.add(item);
         }
-        return stringArray[listSize - 1];
+        listSize++;
+        return stringArray[listSize - 1] = item;
     }
 
     @Override
     public String add(int index, String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
-        if (index < 0 || index >= listSize) {
-            throw new StringListIndexOutOfRangeException("Index out of range!");
-        }
-        if (listSize + 1 > arraySize) {
+        validateIndex(index);
+        validateItem(item);
+        if (listSize >= stringArray.length) {
             increaseArray();
         }
-        for (int i = listSize; i >= index; i--) {
-            stringArray[i] = stringArray[i - 1];
-            stringArray[i - 1] = null;
+        if (!(index == listSize - 1)) {
+            for (int i = listSize; i > index; i--) {
+                stringArray[i] = stringArray[i - 1];
+            }
         }
-        stringArray[index] = item;
         listSize++;
-        return stringArray[index];
+        return stringArray[index] = item;
     }
 
     @Override
     public String set(int index, String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
-        if (index < 0 || index >= listSize) {
-            throw new StringListIndexOutOfRangeException("Index out of range!");
-        } else {
-            stringArray[index] = item;
-        }
-        return stringArray[index];
+        validateIndex(index);
+        validateItem(item);
+        return stringArray[index] = item;
     }
 
     @Override
     public String remove(String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
-        int index = this.indexOf(item);
-        if (index != -1) {
-            return this.remove(index);
-        } else {
-            throw new StringListElementNotFound("Element item = '" + item + "' not found!");
-        }
+        validateItem(item);
+        int index = indexOf(item);
+        return remove(index);
     }
 
     @Override
     public String remove(int index) {
-        if (index < 0 || index >= listSize) {
-            throw new StringListIndexOutOfRangeException("Index out of range!");
-        }
-        String item;
-        item = stringArray[index];
-        stringArray[index] = null;
-        for (int i = index + 1; i <= listSize; i++) {
-            stringArray[i - 1] = stringArray[i];
-            stringArray[i] = null;
+        validateIndex(index);
+        String tmp = stringArray[index];
+        for (int i = index; i < listSize; i++) {
+            stringArray[i] = stringArray[i + 1];
         }
         listSize--;
-        if ((listSize < (int) (arraySize / 1.3F)) && (arraySize > 10)) {
+        if (stringArray.length > 10 && stringArray.length > listSize * 1.3F) {
             decreaseArray();
         }
-        return item;
+        return tmp;
     }
 
     @Override
     public boolean contains(String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
+        validateItem(item);
         for (int i = 0; i < listSize; i++) {
             if (stringArray[i].equals(item)) {
                 return true;
@@ -114,9 +83,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public int indexOf(String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
+        validateItem(item);
         for (int i = 0; i < listSize; i++) {
             if (stringArray[i].equals(item)) {
                 return i;
@@ -127,9 +94,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public int lastIndexOf(String item) {
-        if (item == null) {
-            throw new StringListNullItemException("Item must not be null!");
-        }
+        validateItem(item);
         for (int i = listSize - 1; i >= 0; i--) {
             if (stringArray[i].equals(item)) {
                 return i;
@@ -140,18 +105,13 @@ public class StringListImpl implements StringList {
 
     @Override
     public String get(int index) {
-        if (index < 0 || index >= listSize) {
-            throw new StringListIndexOutOfRangeException("Index out of range!");
-        } else {
-            return stringArray[index];
-        }
+        validateIndex(index);
+        return stringArray[index];
     }
 
     @Override
     public boolean equals(StringList otherList) {
-        if (otherList == null) {
-            throw new StringListNullException("StringList must not be null!");
-        }
+        validateStringList(otherList);
         return Arrays.equals(this.toArray(), otherList.toArray());
     }
 
@@ -167,41 +127,44 @@ public class StringListImpl implements StringList {
 
     @Override
     public void clear() {
-        if (!this.isEmpty()) {
-            for (int i = 0; i <= listSize; i++) {
-                stringArray[i] = null;
-            }
-            arraySize = 10;
-            listSize = 0;
-            this.stringArray = new String[arraySize];
-        }
+        listSize = 0;
     }
 
     @Override
     public String[] toArray() {
-        String[] strArray = new String[listSize];
-        System.arraycopy(stringArray, 0, strArray, 0, listSize);
-        return strArray;
+        return Arrays.copyOf(stringArray, listSize);
+    }
+
+    private void validateIndex(int index) {
+        if (index < 0 || index >= listSize) {
+            throw new StringListIndexOutOfRangeException("Index out of range!");
+        }
+    }
+
+    private void validateItem(String item) {
+        if (item == null) {
+            throw new StringListNullItemException("Item cannot be null!");
+        }
+    }
+
+    private void validateStringList(StringList stringList) {
+        if (stringList == null) {
+            throw new StringListNullException("StringList cannot be null!");
+        }
     }
 
     /**
      * Creating a new String[] array with a size 30% larger than the previous one
      */
     private void increaseArray() {
-        arraySize = (int) (arraySize * 1.3F);
-        String[] newStringArray = new String[arraySize];
-        System.arraycopy(stringArray, 0, newStringArray, 0, stringArray.length);
-        stringArray = newStringArray;
+        stringArray = Arrays.copyOf(stringArray, (int) (listSize * 1.3F));
     }
 
     /**
      * Creating a new String[] array with a size 30% smaller than the previous one
      */
     private void decreaseArray() {
-        arraySize = (int) (listSize * 1.3F);
-        String[] newStringArray = new String[arraySize];
-        System.arraycopy(stringArray, 0, newStringArray, 0, stringArray.length);
-        stringArray = newStringArray;
+        stringArray = Arrays.copyOf(stringArray, listSize + 10);
     }
 }
 
